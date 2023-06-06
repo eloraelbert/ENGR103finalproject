@@ -6,7 +6,7 @@ volatile bool intFlag = 0;
 int score = 0;
 int count = 0;
 volatile bool state = 0;
-int gameDelay = 3000;
+int gameDelay = 30;
 
 float midi[127];
 int songMajor[6][2] = {
@@ -41,9 +41,10 @@ void setup() {
 void loop() {
   //is switch on?
   if(intFlag){
-    intFlag = 0;
     delay(5);
     state = digitalRead(switchPin);
+    intFlag = 0;
+  }
     if (!state){
       Serial.println("Round start!");
     for(int i = 0; i < 10; i++){
@@ -87,7 +88,7 @@ void loop() {
     Serial.println("game over! Your score is:");
     Serial.println(score);
     soundOutput(score);
-    state = 1;
+    state = !state;
     }
     if (state){
       delay(5);
@@ -95,11 +96,8 @@ void loop() {
       Serial.println("game quit");
     }
   }
-  }
-
 
 //functions for outputs
-
 void LEDoutput(int redval, int greenval){
   for(int i=0; i<10; i++){
     CircuitPlayground.setPixelColor(i, redval, greenval, 0);
@@ -112,14 +110,14 @@ void soundOutput(int score){
   if(score >= 5){
     Serial.println("Win");
     for(int i=0; i < 6; i++){
-      CircuitPlayground.playTone(songMajor[i][0], songMajor[i][1]);
+      //CircuitPlayground.playTone(songMajor[i][0], songMajor[i][1]);
     }
     delay(5000);
   }
   if(score < 5){
     Serial.println("Loose");
      for(int i=0; i < 6; i++){
-      CircuitPlayground.playTone(songMinor[i][0], songMinor[i][1]);
+      //CircuitPlayground.playTone(songMinor[i][0], songMinor[i][1]);
     }
     delay(5000);
   }
