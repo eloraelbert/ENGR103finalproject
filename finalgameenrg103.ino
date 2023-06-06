@@ -6,23 +6,24 @@ volatile bool intFlag = 0;
 int score = 0;
 int count = 0;
 volatile bool state = 0;
+int gameDelay = 3000;
 
 float midi[127];
 int songMajor[6][2] = {
-  {64, 50},
-  {71, 50},
-  {69, 50},
-  {67, 50},
-  {60, 200},
-  {64, 100}
+  {329, 50},
+  {261, 50},
+  {440, 50},
+  {329, 50},
+  {147, 200},
+  {329, 100}
 };
 int songMinor[6][2] = {
-  {65, 100},
-  {63, 100},
-  {62, 200},
-  {70, 50},
-  {72, 50},
-  {65, 100}
+  {300, 100},
+  {294, 150},
+  {261, 200},
+  {300, 50},
+  {294, 50},
+  {261, 200}
 };
 int challenges[2] = {1, 2};
 //l=left button, r=right button, a=shake s=sound c=light
@@ -40,11 +41,12 @@ void setup() {
 void loop() {
   //is switch on?
   if(intFlag){
+    intFlag = 0;
     delay(5);
     state = digitalRead(switchPin);
     if (!state){
-      Serial.println("Round start");
-    //for(int i = 0; i < 10; i++){
+      Serial.println("Round start!");
+    for(int i = 0; i < 10; i++){
       //retrieve sensor values
       int randIndex = random(2);
       int randChallenge = challenges[randIndex];
@@ -52,7 +54,7 @@ void loop() {
       //start delay here
       if(randChallenge == 1){
         Serial.println("Press the left button!");
-        delay(5000);
+        delay(gameDelay);
         bool leftButtonOn = digitalRead(leftPin);
         if(leftButtonOn){
           LEDoutput(0, 255);
@@ -66,8 +68,8 @@ void loop() {
         }
       }
       if(randChallenge == 2){
-        //Serial.println("Press the right button!");
-        delay(5000);
+        Serial.println("Press the right button!");
+        delay(gameDelay);
         bool rightButtonOn = digitalRead(rightPin);
         if(rightButtonOn){
           LEDoutput(0, 255);
@@ -81,14 +83,11 @@ void loop() {
         }
 
       }
-      if(count > 10){
-        Serial.println("game over! Your score is:");
-        Serial.println(score);
-        soundOutput(score);
-        //continue;
-      }
-    //}
-      
+    }
+    Serial.println("game over! Your score is:");
+    Serial.println(score);
+    soundOutput(score);
+    state = 1;
     }
     if (state){
       delay(5);
@@ -96,8 +95,8 @@ void loop() {
       Serial.println("game quit");
     }
   }
+  }
 
-}
 
 //functions for outputs
 
@@ -105,18 +104,24 @@ void LEDoutput(int redval, int greenval){
   for(int i=0; i<10; i++){
     CircuitPlayground.setPixelColor(i, redval, greenval, 0);
   }
+  delay(1000);
+  CircuitPlayground.clearPixels();
 }
 
 void soundOutput(int score){
   if(score >= 5){
-    for(int i=0; i < sizeof(songMajor) / sizeof(songMajor[0]); i++){
-      CircuitPlayground.playTone(midi[songMajor[i][0]], songMajor[i][1]);
+    Serial.println("Win");
+    for(int i=0; i < 6; i++){
+      CircuitPlayground.playTone(songMajor[i][0], songMajor[i][1]);
     }
+    delay(5000);
   }
   if(score < 5){
-     for(int i=0; i < sizeof(songMinor) / sizeof(songMinor[0]); i++){
-      CircuitPlayground.playTone(midi[songMinor[i][0]], songMinor[i][1]);
+    Serial.println("Loose");
+     for(int i=0; i < 6; i++){
+      CircuitPlayground.playTone(songMinor[i][0], songMinor[i][1]);
     }
+    delay(5000);
   }
 }
 
