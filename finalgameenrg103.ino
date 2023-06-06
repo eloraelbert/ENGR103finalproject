@@ -6,7 +6,7 @@ volatile bool intFlag = 0;
 int score = 0;
 int count = 0;
 volatile bool state = 0;
-int gameDelay = 30;
+int gameDelay = 3000;
 
 float midi[127];
 int songMajor[6][2] = {
@@ -25,7 +25,7 @@ int songMinor[6][2] = {
   {294, 50},
   {261, 200}
 };
-int challenges[2] = {1, 2};
+int challenges[4] = {1, 2, 3, 4};
 //l=left button, r=right button, a=shake s=sound c=light
 
 void setup() {
@@ -49,7 +49,7 @@ void loop() {
       Serial.println("Round start!");
     for(int i = 0; i < 10; i++){
       //retrieve sensor values
-      int randIndex = random(2);
+      int randIndex = random(4);
       int randChallenge = challenges[randIndex];
       //Serial.println(randChallenge);
       //start delay here
@@ -84,6 +84,36 @@ void loop() {
         }
 
       }
+      if(randChallenge == 3){
+        Serial.println("Cover your board!");
+        delay(gameDelay);
+        int light = CircuitPlayground.lightSensor();
+        light = map(light, 0, 1023, 0, 255);
+        if(light < 100){
+          LEDoutput(0, 255);
+          score += 1;
+          count += 1;
+        }
+        if(light >= 100){
+          LEDoutput(255, 0);
+          score -= 1;
+          count += 1;
+        }
+      }
+      if(randChallenge == 4){
+        Serial.println("YELL!!");
+        delay(gameDelay);
+        int volume = CircuitPlayground.mic.soundPressureLevel(gameDelay);
+        if(volume >= 70){
+          LEDoutput(0, 255);
+          score += 1;
+        }
+        if(volume < 70){
+          LEDoutput(255, 0);
+          score -= 1;
+        }
+
+      }
     }
     Serial.println("game over! Your score is:");
     Serial.println(score);
@@ -110,14 +140,14 @@ void soundOutput(int score){
   if(score >= 5){
     Serial.println("Win");
     for(int i=0; i < 6; i++){
-      //CircuitPlayground.playTone(songMajor[i][0], songMajor[i][1]);
+      CircuitPlayground.playTone(songMajor[i][0], songMajor[i][1]);
     }
     delay(5000);
   }
   if(score < 5){
     Serial.println("Loose");
      for(int i=0; i < 6; i++){
-      //CircuitPlayground.playTone(songMinor[i][0], songMinor[i][1]);
+      CircuitPlayground.playTone(songMinor[i][0], songMinor[i][1]);
     }
     delay(5000);
   }
